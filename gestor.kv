@@ -1,0 +1,289 @@
+
+#:import Clock kivy.clock.Clock
+
+ScreenManager:
+    id: root_sm
+    SplashScreen:
+        name: "splash"
+    MenuScreen:
+        name: "menu"
+    CalendarioScreen:
+        name: "calendario"
+    GastosScreen:
+        name: "gastos"
+    IngresosScreen:
+        name: "ingresos"
+    DeudoresScreen:
+        name: "deudores"
+    MetasScreen:
+        name: "metas"
+    AnalisisScreen:
+        name: "analisis"
+
+<SplashScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+        Image:
+            source: "logo.jpg"  # Asegúrate que el archivo exista en el proyecto
+            allow_stretch: True
+            keep_ratio: True
+        Label:
+            text: "Gestora"
+            font_size: "22sp"
+            size_hint_y: 0.2
+
+<MenuScreen>:
+    tip: ""
+    total: 0
+    BoxLayout:
+        orientation: "vertical"
+        padding: 12
+        spacing: 10
+        canvas.before:
+            Color:
+                rgba: 1,1,1,0.10
+            Rectangle:
+                source: "logo.jpg"  # Logo como fondo con baja opacidad
+                pos: self.pos
+                size: self.size
+        Label:
+            text: "Saldo total: $%0.2f" % root.total
+            size_hint_y: 0.15
+            font_size: "22sp"
+            bold: True
+        Label:
+            text: root.tip
+            size_hint_y: 0.1
+        GridLayout:
+            cols: 2
+            spacing: 8
+            size_hint_y: 0.75
+            Button:
+                text: "📅 Calendario"
+                on_release: app.root.current = "calendario"
+            Button:
+                text: "💸 Gastos"
+                on_release: app.root.current = "gastos"
+            Button:
+                text: "💰 Ingresos"
+                on_release: app.root.current = "ingresos"
+            Button:
+                text: "🧾 Deudores"
+                on_release: app.root.current = "deudores"
+            Button:
+                text: "🎯 Metas"
+                on_release: app.root.current = "metas"
+            Button:
+                text: "📊 Analizar (permiso)"
+                on_release: app.root.current = "analisis"
+
+<CalendarioScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 6
+        Label:
+            text: "Calendario (simple por ahora)"
+            size_hint_y: 0.1
+        BoxLayout:
+            size_hint_y: 0.15
+            spacing: 6
+            TextInput:
+                id: fecha_cal
+                hint_text: "Fecha (YYYY-MM-DD)"
+            Button:
+                text: "Hoy"
+                on_release: fecha_cal.text = __import__('datetime').date.today().isoformat()
+        Label:
+            text: "Interacción del día: revisa metas y deudores 😉"
+        Button:
+            size_hint_y: 0.12
+            text: "Volver"
+            on_release: app.root.current = "menu"
+
+<GastosScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 6
+        BoxLayout:
+            size_hint_y: 0.18
+            spacing: 6
+            TextInput:
+                id: gasto_monto
+                hint_text: "Monto"
+                input_filter: "float"
+            TextInput:
+                id: gasto_cat
+                hint_text: "Categoría (ej: comida)"
+            TextInput:
+                id: gasto_nota
+                hint_text: "Nota"
+            TextInput:
+                id: gasto_fecha
+                hint_text: "Fecha (YYYY-MM-DD opcional)"
+        Button:
+            size_hint_y: 0.14
+            text: "Agregar gasto"
+            on_release:
+                app.add_gasto(gasto_monto.text, gasto_cat.text, gasto_nota.text, gasto_fecha.text)
+                gasto_monto.text = gasto_cat.text = gasto_nota.text = gasto_fecha.text = ""
+        ScrollView:
+            Label:
+                id: gastos_resumen
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1] if self.texture_size else self.height
+        Button:
+            size_hint_y: 0.12
+            text: "Volver"
+            on_release: app.root.current = "menu"
+
+<IngresosScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 6
+        BoxLayout:
+            size_hint_y: 0.18
+            spacing: 6
+            TextInput:
+                id: ingreso_monto
+                hint_text: "Monto"
+                input_filter: "float"
+            TextInput:
+                id: ingreso_fuente
+                hint_text: "Fuente (sueldo, etc.)"
+            TextInput:
+                id: ingreso_nota
+                hint_text: "Nota"
+            TextInput:
+                id: ingreso_fecha
+                hint_text: "Fecha (YYYY-MM-DD opcional)"
+        Button:
+            size_hint_y: 0.14
+            text: "Agregar ingreso"
+            on_release:
+                app.add_ingreso(ingreso_monto.text, ingreso_fuente.text, ingreso_nota.text, ingreso_fecha.text)
+                ingreso_monto.text = ingreso_fuente.text = ingreso_nota.text = ingreso_fecha.text = ""
+        ScrollView:
+            Label:
+                id: ingresos_resumen
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1] if self.texture_size else self.height
+        Button:
+            size_hint_y: 0.12
+            text: "Volver"
+            on_release: app.root.current = "menu"
+
+<DeudoresScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 6
+        BoxLayout:
+            size_hint_y: 0.22
+            spacing: 6
+            TextInput:
+                id: deu_nombre
+                hint_text: "Nombre"
+            TextInput:
+                id: deu_monto
+                hint_text: "Monto"
+                input_filter: "float"
+            TextInput:
+                id: deu_fecha
+                hint_text: "Fecha de pago (YYYY-MM-DD)"
+            TextInput:
+                id: deu_excusa
+                hint_text: "Excusa del deudor"
+        Button:
+            size_hint_y: 0.14
+            text: "Agregar deudor"
+            on_release:
+                app.add_deudor(deu_nombre.text, deu_monto.text, deu_fecha.text, deu_excusa.text)
+                deu_nombre.text = deu_monto.text = deu_fecha.text = deu_excusa.text = ""
+        ScrollView:
+            Label:
+                id: deudores_resumen
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1] if self.texture_size else self.height
+        Button:
+            size_hint_y: 0.12
+            text: "Volver"
+            on_release: app.root.current = "menu"
+
+<MetasScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 6
+        BoxLayout:
+            size_hint_y: 0.18
+            spacing: 6
+            TextInput:
+                id: meta_titulo
+                hint_text: "Meta (ej: Auto, Casa)"
+            TextInput:
+                id: meta_obj
+                hint_text: "Objetivo $"
+                input_filter: "float"
+        Button:
+            size_hint_y: 0.14
+            text: "Agregar meta"
+            on_release:
+                app.add_meta(meta_titulo.text, meta_obj.text)
+                meta_titulo.text = meta_obj.text = ""
+        ScrollView:
+            Label:
+                id: metas_resumen
+                text_size: self.width, None
+                size_hint_y: None
+                height: self.texture_size[1] if self.texture_size else self.height
+        Button:
+            size_hint_y: 0.12
+            text: "Volver"
+            on_release: app.root.current = "menu"
+
+<AnalisisScreen>:
+    resultado: ""
+    permiso_texto: ""
+    BoxLayout:
+        orientation: "vertical"
+        padding: 10
+        spacing: 6
+        Label:
+            text: "Permitir análisis de gastos: [b]%s[/b]" % root.permiso_texto
+            markup: True
+            size_hint_y: 0.12
+        BoxLayout:
+            size_hint_y: 0.14
+            spacing: 6
+            Button:
+                text: "Toggle permiso"
+                on_release: app.toggle_analisis()
+            TextInput:
+                id: anal_fecha
+                hint_text: "Fecha (YYYY-MM-DD, vacío=hoy)"
+            Button:
+                text: "Analizar"
+                on_release: app.analizar_dia(anal_fecha.text)
+        Label:
+            id: analisis_result
+            text: root.resultado
+            text_size: self.width, None
+            size_hint_y: 0.6
+            halign: "left"
+            valign: "top"
+        Button:
+            size_hint_y: 0.12
+            text: "Volver"
+            on_release: app.root.current = "menu"
